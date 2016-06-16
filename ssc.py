@@ -9,15 +9,49 @@ from __future__ import print_function
 __author__ = 'Ted Verhey'
 __email__ = 'verheytb@gmail.com'
 
-import os, sys, argparse, multiprocessing
+import os
+import sys
+import argparse
+import multiprocessing
 from datetime import datetime
 from time import time, sleep
 import numpy as np
+import ConsensusCore as cc
 from GenomicConsensus.quiver.model import loadQuiverConfig
-from GenomicConsensus.quiver.utils import consensusForAlignments
+from GenomicConsensus.quiver.utils import refineConsensus, refineDinucleotideRepeats,\
+    consensusConfidence, QuiverConsensus
 from pbcore.io.align.CmpH5IO import CmpH5Reader
 from pbcore.io.FastaIO import IndexedFastaReader, FastaWriter
 from pbcore.io.FastqIO import FastqWriter
+
+
+def consensusForAlignments(refWindow, refSequence, alns, quiverConfig):
+    _, refStart, refEnd = refWindow
+    # No POA --- just use the reference as a starting point.
+    poaCss = refSequence
+    # Extract reads into ConsensusCore-compatible objects, and map them into the
+    # coordinates relative to the POA consensus
+    mappedReads = [ quiverConfig.extractMappedRead(aln, refStart) for aln in alns ]
+    # Load the mapped reads into the mutation scorer, and iterate
+    # until convergence.
+    configTbl = quiverConfig.ccQuiverConfigTbl
+    mms = cc.SparseSseQvMultiReadMutationScorer(configTbl, poaCss)
+    for mr in mappedReads:
+        mms.AddRead(mr)
+    # Iterate until convergence
+    _, quiverConverged = refineConsensus(mms, quiverConfig)
+    if quiverConverged:
+        if quiverConfig.refineDinucleotideRepeats:
+            refineDinucleotideRepeats(mms)
+        quiverCss = mms.Template()
+        if quiverConfig.computeConfidence:
+            confidence = consensusConfidence(mms)
+        else:
+            confidence = np.zeros(shape=len(quiverCss), dtype=int)
+        return QuiverConsensus(refWindow, quiverCss, confidence, mms)
+    else:
+        return QuiverConsensus.noCallConsensus(quiverConfig.noEvidenceConsensus, refWindow, refSequence)
+
 
 # parse arguments and display help information
 parser = argparse.ArgumentParser(description="SSCONSENSUS computes single-stranded consensus reads from an " +
@@ -45,8 +79,6 @@ parser.add_argument("-t", "--trim", type=str, default=None,
                     help="Trims all sequences to the specified tuple of sequences (eg. ACAGCTG, CGGCGAAT). These " +
                          "sequences must be in the same strand as the reference.")
 parser.add_argument("-q", "--fastq", action='store_true', help="Outputs FASTQ files instead of FASTA files.")
-parser.add_argument("-e", "--report", action='store_true',
-                    help="Produces a detailed report with the statistics for each read.")
 parser.add_argument("-c", "--cpus", default=multiprocessing.cpu_count() - 1, type=int, help="Number of CPUs to use")
 args = parser.parse_args()
 
@@ -214,16 +246,14 @@ def writerProcess(outDir):
         os.makedirs(fastOutDir)
 
     # opens files
-    if args.report:
-        csvOut = open(os.path.join(outDir, "Report.csv"), "w")
-        csvOut.write("Name,Barcode,NumPasses,Coverage,AvgConfidence,MinConfidence,TrimFail,MappingFail\n")
+    csvOut = open(os.path.join(outDir, "Report.csv"), "w")
+    csvOut.write("Name,Barcode,NumPasses,Coverage,AvgConfidence,MinConfidence,TrimFail,MappingFail\n")
     writers = {}
     while counter.value < totalNumber:
         result = resultQueue.get()
-        if args.report:
-            csvOut.write("%s,%s,%d,%d,%0.6f,%0.6f,%s,%s\n" % (
-                result.name, result.barcode, result.numPasses, result.coverage, result.predictedAccuracy,
-                result.minConfidence, result.trimFail, result.mappingFail))
+        csvOut.write("%s,%s,%d,%d,%0.6f,%0.6f,%s,%s\n" % (
+            result.name, result.barcode, result.numPasses, result.coverage, result.predictedAccuracy,
+            result.minConfidence, result.trimFail, result.mappingFail))
         if not result.barcode in writers:
             if args.fastq:
                 writers[result.barcode] = FastqWriter(os.path.join(fastOutDir, result.barcode + ".fastq"))
