@@ -26,6 +26,15 @@ from pbcore.io.FastqIO import FastqWriter
 
 
 def consensusForAlignments(refWindow, refSequence, alns, quiverConfig):
+    """
+    This function overrides the one in the GenomicConsensus module in order to start using the reference instead
+    of a POA consensus.
+    :param refWindow:
+    :param refSequence:
+    :param alns:
+    :param quiverConfig:
+    :return:
+    """
     _, refStart, refEnd = refWindow
     # No POA --- just use the reference as a starting point.
     poaCss = refSequence
