@@ -37,4 +37,4 @@ $ python pbssc.py -j $JOBDIR -r reference_amplicon.fasta -o outdir -t ATCTTCGATC
 ## Notes
 
 ### Trimming
-- If amplicon sequences need to be trimmed, it is recommended to use this program to do so, especially if using the filtering options. Because end sequences may have lower consensus accuracy, pbssc trims before filtering.
+- If amplicon sequences need to be trimmed, it is recommended to use this program to do so, especially if using the filtering options. Because the ends of the sequences may have lower consensus accuracy, pbssc trims before filtering.
