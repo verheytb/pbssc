@@ -63,11 +63,8 @@ def consensusForAlignments(refWindow, refSequence, alns, quiverConfig):
 
 
 # parse arguments and display help information
-parser = argparse.ArgumentParser(description="SSCONSENSUS computes single-stranded consensus reads from an " +
-                                             "aligned_reads.cmp.h5 file that has been filtered for barcode score " +
-                                             "ratios using pbbarcode. It outputs to FASTA or FASTQ formats and can " +
-                                             "also output a CSV file with detailed statistics for each read. " +
-                                             "SSCONSENSUS must be called from the SMRT Shell.",
+parser = argparse.ArgumentParser(description="pbssc generates single-stranded CCS reads from PacBio .bax.h5 files of "
+                                             "multiplexed amplicon sequences from an RSII instrument.",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("-j", "--jobDir", required=True, type=str,
                     help='The directory containing the SMRT Analysis job for processing ' +
@@ -85,8 +82,8 @@ parser.add_argument("-p", "--minCoverage", type=int, default=None,
                     help="Ignores strand-specific consensuses that have fewer than the specified number of passes, " +
                          "including partial passes.")
 parser.add_argument("-t", "--trim", type=str, default=None,
-                    help="Trims all sequences to the specified tuple of sequences (eg. ACAGCTG, CGGCGAAT). These " +
-                         "sequences must be in the same strand as the reference.")
+                    help="Trims all sequences to the specified tuple of sequences (eg. ACAGCTG, CGGCGAAT), inclusively."
+                         "These sequences must be in the same strand as the reference.")
 parser.add_argument("-q", "--fastq", action='store_true', help="Outputs FASTQ files instead of FASTA files.")
 parser.add_argument("-c", "--cpus", default=multiprocessing.cpu_count() - 1, type=int, help="Number of CPUs to use")
 args = parser.parse_args()
