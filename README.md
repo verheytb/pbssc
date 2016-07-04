@@ -18,19 +18,20 @@ In order to do the first few steps of the analysis, you will also need [SMRT Ana
 
 2. Take note of the job number and directory; it should be in your `userdata` directory that was specified in the SMRT Analysis installation. An example job directory would be `/opt/smrtanalysis/userdata/jobs/016/016531`. In a terminal, assign that directory to a variable, as well as the location of your SMRT Analysis installation.
 ```sh
-JOBDIR="/opt/smrtanalysis/userdata/jobs/016/016531"
-SMRT_HOME="/opt/smrtanalysis"
+$ JOBDIR="/opt/smrtanalysis/userdata/jobs/016/016531"
+$ SMRT_HOME="/opt/smrtanalysis"
 ```
 
 3. Run `pbbarcode labelZmws` from the SMRT Shell to filter reads for those that were high-scoring during demultiplexing. Failure to do this step will result in incorrect barcode sorting.
 ```sh
-$SMRT_HOME/smrtcmds/bin/smrtshell
-pbbarcode labelAlignments --minScoreRatio 1.1 $JOBDIR/data/barcode.fofn $JOBDIR/data/aligned_reads.cmp.h5
+$ $SMRT_HOME/smrtcmds/bin/smrtshell
+$ pbbarcode labelAlignments --minScoreRatio 1.1\
+$ $JOBDIR/data/barcode.fofn $JOBDIR/data/aligned_reads.cmp.h5
 ```
 
 4. Run `pbssc.py`, using the reference originally used in the SMRT Analysis Resequencing Job, and trim sequences if needed.
 ```sh
-python pbssc.py -j $JOBDIR -r reference_amplicon.fasta -o outdir -t ATCTTCGATCGA,TGTAACTGAAGA
+$ python pbssc.py -j $JOBDIR -r reference_amplicon.fasta -o outdir -t ATCTTCGATCGA,TGTAACTGAAGA
 ```
 
 ## Notes
