@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-# SSCONSENSUS computes single-stranded consensus reads from an aligned_reads.cmp.h5 file that has been filtered for
-# barcode score ratios using pbbarcode. It outputs to FASTA or FASTQ formats and can also output a CSV file with
-# detailed statistics for each read. SSCONSENSUS must be called from the SMRT Shell.
+# pbssc computes single-stranded consensus reads from an aligned_reads.cmp.h5 file that has been filtered for
+# barcode score ratios using pbbarcode. It outputs to FASTA or FASTQ formats and also outputs a CSV file with
+# detailed statistics for each read.
 
 from __future__ import print_function
 
@@ -260,7 +260,7 @@ def writerProcess(outDir):
         csvOut.write("%s,%s,%d,%d,%0.6f,%0.6f,%s,%s\n" % (
             result.name, result.barcode, result.numPasses, result.coverage, result.predictedAccuracy,
             result.minConfidence, result.trimFail, result.mappingFail))
-        if not result.barcode in writers:
+        if result.barcode not in writers:
             if args.fastq:
                 writers[result.barcode] = FastqWriter(os.path.join(fastOutDir, result.barcode + ".fastq"))
             else:

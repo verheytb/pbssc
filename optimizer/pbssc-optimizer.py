@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Optimize looks at the data output from SSCONSENSUS and tests the different parameters to see how many reads they
+# Optimize looks at the data output from pbssc and tests the different parameters to see how many reads they
 # include and the error rates.
 
 import os
