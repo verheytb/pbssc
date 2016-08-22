@@ -84,6 +84,9 @@ parser.add_argument("-p", "--minCoverage", type=int, default=None,
 parser.add_argument("-t", "--trim", type=str, default=None,
                     help="Trims all sequences to the specified tuple of sequences (eg. ACAGCTG, CGGCGAAT), inclusively."
                          "These sequences must be in the same strand as the reference.")
+parser.add_argument("--ignore_barcodes", action="store_true",
+                    help="Does not output into different files by barcode, and must be specified for datasets lacking "
+                         "barcoding.")
 parser.add_argument("-q", "--fastq", action='store_true', help="Outputs FASTQ files instead of FASTA files.")
 parser.add_argument("-c", "--cpus", default=multiprocessing.cpu_count() - 1, type=int, help="Number of CPUs to use")
 args = parser.parse_args()
@@ -214,7 +217,10 @@ def workerProcess(inQueue, refFile, quiverConfig):
                 movieID, holeNumber, rcrefstrand = inQueue.get()
                 alns = d[((d.MovieID == movieID) & (d.HoleNumber == holeNumber) & (d.RCRefStrand == rcrefstrand))]
                 cssName = "/".join(alns[0].readName.split("/")[:-1]) + "/" + str(alns[0].RCRefStrand) + "/ssc"
-                cssObj = ConsensusSequence(cssName, "", "", len(alns), 0, 0, alns[0].barcodeName)
+                if args.ignore_barcodes:
+                    cssObj = ConsensusSequence(cssName, "", "", len(alns), 0, 0, "all_reads")
+                else:
+                    cssObj = ConsensusSequence(cssName, "", "", len(alns), 0, 0, alns[0].barcodeName)
                 if not cssObj.numPasses >= args.minCoverage:
                     cssObj.minNumPassesFail = True
                 if not checkMapping(alns):
