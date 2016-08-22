@@ -242,7 +242,10 @@ def workerProcess(inQueue, refFile, quiverConfig):
                         cssObj.minAvgConfidenceFail = True
                     if args.trim:
                         cssObj = trim(cssObj, lseq, rseq)
-                    cssObj.minConfidence = 1 - unphred(np.amin(np.array(cssObj.qual, dtype=float)))
+                    try:
+                        cssObj.minConfidence = 1 - unphred(np.amin(np.array(cssObj.qual, dtype=float)))
+                    except ValueError:  # when cssObj.qual is zero-length
+                        cssObj.minConfidence = 0
                     if not cssObj.minConfidence >= args.minConfidence:
                         cssObj.minConfidenceFail = True
                 resultQueue.put(cssObj)
