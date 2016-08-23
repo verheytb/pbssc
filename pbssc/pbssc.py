@@ -81,9 +81,11 @@ parser.add_argument("-m", "--minConfidence", type=float, default=None,
 parser.add_argument("-p", "--minCoverage", type=int, default=None,
                     help="Ignores strand-specific consensuses that have fewer than the specified number of passes, " +
                          "including partial passes.")
-parser.add_argument("-t", "--trim", type=str, default=None,
-                    help="Trims all sequences to the specified tuple of sequences (eg. ACAGCTG, CGGCGAAT), inclusively."
-                         "These sequences must be in the same strand as the reference.")
+trimgroup = parser.add_mutually_exclusive_group()
+trimgroup.add_argument("-t", "--trim", type=str, default=None,
+                    help="Specify two sequences (eg. ACAGCTG, CGGCGAAT) that inclusively demarcate where to trim.")
+trimgroup.add_argument("-x", "--clip", type=int, default=None,
+                    help="Specify the number of bases to clip from the ends of each read.")
 parser.add_argument("--ignore_barcodes", action="store_true",
                     help="Does not output into different files by barcode, and must be specified for datasets lacking "
                          "barcoding.")
@@ -206,6 +208,16 @@ def trim(cssObj, leftSeq, rightSeq):
     return cssObj
 
 
+def clip(cssObj, d):
+    # trims a cssObj to a certain length from the ends of the read
+    if len(cssObj.seq) > 2 * d:
+        cssObj.seq = cssObj.seq[d:-d]
+        cssObj.qual = cssObj.qual[d:-d]
+    else:
+        cssObj.trimFail = True
+    return cssObj
+
+
 # The worker function
 def workerProcess(inQueue, refFile, quiverConfig):
     countFromReset = 0
@@ -242,6 +254,8 @@ def workerProcess(inQueue, refFile, quiverConfig):
                         cssObj.minAvgConfidenceFail = True
                     if args.trim:
                         cssObj = trim(cssObj, lseq, rseq)
+                    if args.clip:
+                        cssObj = clip(cssObj, args.clip)
                     try:
                         cssObj.minConfidence = 1 - unphred(np.amin(np.array(cssObj.qual, dtype=float)))
                     except ValueError:  # when cssObj.qual is zero-length
