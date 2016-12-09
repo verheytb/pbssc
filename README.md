@@ -26,7 +26,7 @@ In order to do the first few steps of the analysis, you will also need [SMRT Ana
   ```sh
   $ $SMRT_HOME/smrtcmds/bin/smrtshell
   $ pbbarcode labelAlignments --minScoreRatio 1.1 $JOBDIR/data/barcode.fofn $JOBDIR/data/aligned_reads.cmp.h5
-  exit
+  $ exit
   ```
 
 4. Run `pbssc.py`, using the reference originally used in the SMRT Analysis Resequencing Job, and trim sequences if needed.
