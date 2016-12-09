@@ -22,14 +22,14 @@ In order to do the first few steps of the analysis, you will also need [SMRT Ana
   $ SMRT_HOME="/opt/smrtanalysis"
   ```
 
-3. Run `pbbarcode labelZmws` from the SMRT Shell to filter reads for those that were high-scoring during demultiplexing. Failure to do this step will result in incorrect barcode sorting.
+3. Run `pbbarcode labelAlignments` from the SMRT Shell to filter reads for those that were high-scoring during demultiplexing. Failure to do this step will result in incorrect barcode sorting.
   ```sh
   $ $SMRT_HOME/smrtcmds/bin/smrtshell
   $ pbbarcode labelAlignments --minScoreRatio 1.1 $JOBDIR/data/barcode.fofn $JOBDIR/data/aligned_reads.cmp.h5
   $ exit
   ```
 
-4. Run `pbssc.py`, using the reference originally used in the SMRT Analysis Resequencing Job, and trim sequences if needed.
+4. Run `pbssc.py`, using the reference originally used in the SMRT Analysis Resequencing Job. The reference must have an associated FASTA index file (references stored in SMRT Portal's 'userdata/references/' directory are already indexed).
   ```sh
   $ python pbssc.py -j $JOBDIR -r reference_amplicon.fasta -o outdir -t ATCTTCGATCGA,TGTAACTGAAGA
   ```
