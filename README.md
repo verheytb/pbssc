@@ -29,12 +29,25 @@ In order to do the first few steps of the analysis, you will also need [SMRT Ana
   $ exit
   ```
 
-4. Run `pbssc.py`, using the reference originally used in the SMRT Analysis Resequencing Job. The reference must have an associated FASTA index file (references stored in SMRT Portal's 'userdata/references/' directory are already indexed).
+4. Ensure that you have run the exit command to leave the SMRT Shell. Then run `pbssc.py`, using the reference originally used in the SMRT Analysis Resequencing Job. The reference must have an associated FASTA index file (references stored in SMRT Portal's 'userdata/references/' directory are already indexed).
   ```sh
   $ python pbssc.py -j $JOBDIR -r reference_amplicon.fasta -o outdir -t ATCTTCGATCGA,TGTAACTGAAGA
   ```
 
+## Detecting Heteroduplexes
+Heteroduplexes can be measured in demultiplexed samples using two methods, implemented in the following included scripts:
+
+### FASTQ method
+Using `fastq-hdfinder.py`, you can supply a directory of fastq files generated using PacBio's CCS generating software. If trimmed to ensure that the ends of the reads are high quality, heteroduplex reads can be detected if single nucleotides have very low QVs in a read that is otherwise high quality. By specifying a QV cutoff with `-q`, fastq-hdfinder will report the number of reads in each file that have any bases below the QV cutoff. 
+
+While the absolute values are not very precise, it should give values that are relatively comparable. This method can be used to identify whether sequences from PCR reactions with high template diversity have more heteroduplexes than sequences from PCR reactions with low template diversity.
+
+### SSC method
+The SSC method is much more precise. `ssc-hdfinder.py` looks through the output of pbssc, and identifies all the reads for which both strands have available post-filter sequences. It then compares the sequences of each strand, and identifies heteroduplexes and homoduplexes.
+
+By default, ssc-hdfinder considers molecules that contain only single indels separated by at least 20bp as homoduplexes. This is to prevent sequencing errors from dominating the reported frequencies of heteroduplexes. This can be bypassed using the `-s` flag or by setting the window size using `-w`.
+
 ## Notes
 
 ### Trimming
-- If amplicon sequences need to be trimmed, it is recommended to use this program to do so, especially if using the filtering options. Because the ends of the sequences may have lower consensus accuracy, pbssc trims before filtering.
+- If amplicon sequences need to be trimmed, it is recommended to use pbssc for this task, especially if using the filtering options. Because the ends of the sequences may have lower consensus accuracy, pbssc trims before filtering.

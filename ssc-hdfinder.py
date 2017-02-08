@@ -85,7 +85,7 @@ parser.add_argument("-w", "--window_length",
                     required=False,
                     default=20,
                     type=int,
-                    help="Ignoring equencing errors (single indels) that are separated from each other by greater " +
+                    help="Ignoring sequencing errors (single indels) that are separated from each other by greater " +
                          "than this distance.")
 args = parser.parse_args()
 

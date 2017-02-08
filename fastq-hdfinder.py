@@ -6,22 +6,29 @@
 __author__ = 'Ted Verhey'
 __email__ = 'verheytb@gmail.com'
 
-import os, sys, csv, glob, argparse, multiprocessing
+import argparse
+import csv
+import glob
+import os
+import sys
 from datetime import datetime
+
 from Bio import SeqIO
 
 # parses the command-line arguments and displays usage information
-parser = argparse.ArgumentParser(description="fastq-hdfinder gets the number of heteroduplexes from a set of FASTQ CCS"+
-                                             " reads by searching for those that have low-confidence basecalls.",
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(
+    description="fastq-hdfinder gets the number of heteroduplexes from a set of FASTQ CCS" +
+                " reads by searching for those that have low-confidence basecalls.",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input_dir", "-i",
                     required=True,
                     type=str,
                     help="Directory containing fasta files for alignment.")
-parser.add_argument("--qcutoff", "-q",
+parser.add_argument("--qvcutoff", "-q",
                     type=int,
                     default=5,
-                    help="An integer Phred score in the interval [0,93], including and below which to call a heteroduplex.")
+                    help="An integer QV score in the interval [0,93], including and below which to call a "
+                         "heteroduplex.")
 args = parser.parse_args()
 inputdir = os.path.normpath(args.input_dir)
 
@@ -47,4 +54,4 @@ with open(reportpath, 'a', newline='') as outhandle:
             for record in SeqIO.parse(fn_handle, "fastq"):
                 if min(record.letter_annotations["phred_quality"]) <= args.qcutoff:
                     num_heteroduplexes += 1
-        writer.writerow([os.path.basename(fn), num_records, num_heteroduplexes, num_heteroduplexes/num_records])
+        writer.writerow([os.path.basename(fn), num_records, num_heteroduplexes, num_heteroduplexes / num_records])
