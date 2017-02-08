@@ -4,6 +4,8 @@
 # barcode score ratios using pbbarcode. It outputs to FASTA or FASTQ formats and also outputs a CSV file with
 # detailed statistics for each read.
 
+# written in Python2 because PacBio APIs are still in Python2
+
 from __future__ import print_function
 
 __author__ = 'Ted Verhey'
