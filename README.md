@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.1111/mmi.13969.svg)](https://doi.org/10.1111/mmi.13969)
+[![DOI](https://zenodo.org/badge/DOI/10.1111/mmi.13873.svg)](https://doi.org/10.1111/mmi.13873)
 
 # pbssc
 Generates single-stranded CCS reads from PacBio .bax.h5 files of multiplexed amplicon sequences from an RSII instrument.
