@@ -200,7 +200,7 @@ def estimateAccuracy(confidence):
 
 def trim(cssObj, leftSeq, rightSeq):
     # trims a cssObj to the specified sequences
-    if all(s in cssObj.seq for s in (leftSeq, rightSeq)):
+    if leftSeq in cssObj.seq and rightSeq in cssObj.seq:
         a = cssObj.seq.find(leftSeq)
         b = cssObj.seq.rfind(rightSeq) + len(rightSeq)
         cssObj.seq = cssObj.seq[a:b]
