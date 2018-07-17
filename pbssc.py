@@ -222,13 +222,14 @@ def clip(cssObj, d):
 
 # The worker function
 def workerProcess(inQueue, refFile, quiverConfig):
-    countFromReset = 0
     with CmpH5Reader(os.path.join(args.jobDir, "data/aligned_reads.cmp.h5")) as d:
-        while not inQueue.empty() and countFromReset < 10000:
-            referenceSeq = IndexedFastaReader(refFile)[0].sequence
-            while not inQueue.empty():
-                countFromReset += 1
-                movieID, holeNumber, rcrefstrand = inQueue.get()
+        referenceSeq = IndexedFastaReader(refFile)[0].sequence
+        while True:
+            queue_item = inQueue.get()
+            if queue_item == "die":
+                return
+            else:
+                movieID, holeNumber, rcrefstrand = queue_item
                 alns = d[((d.MovieID == movieID) & (d.HoleNumber == holeNumber) & (d.RCRefStrand == rcrefstrand))]
                 cssName = "/".join(alns[0].readName.split("/")[:-1]) + "/" + str(alns[0].RCRefStrand) + "/ssc"
                 if args.ignore_barcodes:
@@ -320,6 +321,8 @@ with CmpH5Reader(os.path.join(args.jobDir, "data/aligned_reads.cmp.h5")) as c:
 totalNumber = len(readSet)
 for i in readSet:
     taskQueue.put(i)
+for i in range(args.cpus):  # poison pill at end of queue
+    taskQueue.put("die")
 
 # starts the processes
 processList = [multiprocessing.Process(target=workerProcess, args=(taskQueue, args.reference, quiverErrorModel)) for i
@@ -337,13 +340,6 @@ while counter.value < totalNumber:
     printmessage("Generating single-stranded consensuses: %d of %d (Write backlog: %d)" % (
         counter.value, totalNumber, resultQueue.qsize()), ontop=True)
     sys.stdout.flush()
-    for x, i in enumerate(processList):
-        if not i.is_alive():
-            i.join()
-            processList[x] = None
-            processList[x] = multiprocessing.Process(target=workerProcess,
-                                                     args=(taskQueue, args.reference, quiverErrorModel))
-            processList[x].start()
     sleep(0.1)
 
 # waits for processes to finish
