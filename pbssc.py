@@ -281,7 +281,7 @@ def writerProcess(outDir):
     csvOut = open(os.path.join(outDir, "Report.csv"), "w")
     csvOut.write("Name,Barcode,NumPasses,Coverage,AvgConfidence,MinConfidence,TrimFail,MappingFail\n")
     writers = {}
-    while counter.value < totalNumber:
+    for writecount in range(totalNumber):
         result = resultQueue.get()
         csvOut.write("%s,%s,%d,%d,%0.6f,%0.6f,%s,%s\n" % (
             result.name, result.barcode, result.numPasses, result.coverage, result.predictedAccuracy,
